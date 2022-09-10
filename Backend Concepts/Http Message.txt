@@ -1,0 +1,30 @@
+HTTP Messages
+
+Client and Server communicate or exchange data through Http messages or HTTP messages are how data is exchanged between a server and a client.
+HTTP messages are the key in using HTTP; their structure is simple, and they are highly extensible.
+There are two types of messages: 
+1.Request Http message - requests sent by the client to trigger an action on the server,
+2.Response Http message - the answer from the server.
+
+HTTP messages are composed of textual information encoded in ASCII, and span over multiple lines.
+HTTP/1.1, and earlier versions of the protocol, these messages were openly sent across the connection and can be read.
+HTTP/2, the once human-readable message is now divided up into HTTP frames, providing optimization and performance improvements.
+HTTP/2 framing mechanism adds a new intermediate layer between the HTTP/1.x syntax and the underlying transport protocol, without fundamentally modifying it: building upon proven mechanisms.
+
+Web developers, or webmasters, rarely craft these textual HTTP messages themselves: software, a Web browser, proxy, or Web server, perform this action. 
+They provide HTTP messages through config files (for proxies or servers), APIs (for browsers), or other interfaces.
+
+Structure Of Http Messages
+
+HTTP messages(requests or responses), share similar structure and are composed of:
+1. A start-line : Start line describes the requests to be implemented(in case of Request message)
+                  or its status of whether success or a failure(in case of response message).
+                  This start-line is always a single line.
+
+2. An optional set of HTTP headers: which specifies the request or describes the body included in the message.   
+
+3. A blank line: that indicates that all meta-information for the request has been sent.
+
+4. An optional body: which contains data associated with the request (like content of an HTML form), 
+                     or the document associated with a response. 
+                     The presence of the body and its size is specified by the start-line and HTTP headers.

@@ -1,0 +1,112 @@
+Cookies
+
+An HTTP cookie (web cookie, browser cookie) is a small piece of data that a server sends to the user's web browser. 
+The browser may store it and send it back with later requests to the same server. Typically, it is used to tell if two requests came from the same browser — keeping a user logged-in, for example. It remembers stateful information for the stateless HTTP protocol
+Cookies are small data files that contain information about a particular web session.
+Cookie consists of name, value, and (optional) attributes / flags
+
+Cookies are mainly used for three purposes:
+1.Session management- Logins, shopping carts, game scores, or anything else the server should 
+2.Personalization - User preferences, themes, and other settings
+3.Tracking - Recording and analyzing user behavior
+
+Cookies were once used for general client-side storage. While this was legitimate when there were the only way to store data on the client, 
+it is now recommended to use modern storage APIs. Cookies are sent with every request, so they can worsen performance (especially for mobile data connections). Modern APIs for client storage are the Web Storage API (localStorage and sessionStorage) and IndexedDB.
+
+Creating cookies
+
+After receiving an HTTP request, a server can send one or more Set-Cookie headers with the response. 
+The cookie is usually stored by the browser, and then the cookie is sent with requests made to the same server inside a Cookie HTTP header. 
+An expiration date or duration can be specified, after which the cookie is no longer sent. 
+Additional restrictions to a specific domain and path can be set, limiting where the cookie is sent.
+
+Example : 
+HTTP/1.1 200 OK
+Content-type: text/html
+Set-Cookie: SESS_ID=9vKnWqiZvuvVsIV1zmzJQeYUgINqXYeS; Domain=example.com; Path=/
+
+HTTP/2.0 200 OK
+Content-Type: text/html
+Set-Cookie: yummy_cookie=choco
+Set-Cookie: tasty_cookie=strawberry
+
+Then, with every subsequent request to the server, the browser sends back all previously-stored cookies to the server using the Cookie header.
+GET /sample_page.html HTTP/2.0
+Host: www.example.org
+Cookie: yummy_cookie=choco; tasty_cookie=strawberry
+
+Types of Cookies:
+Type of a cookie is defined by its expiration time or lifetime
+1.Session cookies - Session cookies are deleted when the current session ends. The browser defines when the "current session" ends, and some browsers use session restoring when restarting, which can cause session cookies to last indefinitely long.
+2.Permanent cookies - Permanent cookies are deleted at a date specified by the Expires attribute, or after a period of time specified by the Max-Age attribute.
+
+Attributes of Cookies
+
+The Domain and Path attributes define the scope of the cookie: what URLs the cookies should be sent to.
+Domain and Path (can only be used on a given site & route)
+Expiration (can only be used until expiry)
+    //when omitted, becomes a session cookie
+    //gets deleted when browser is closed
+
+Flags used in Cookies
+
+1.HttpOnly (cannot be read with JS on the client-side)
+
+2.Secure (can only sent over encrypted HTTPS channel), and
+
+3.SameSite (can only be sent from the same domain, i.e. no CORS sharing)    
+
+A cookie with the HttpOnly attribute is inaccessible to the JavaScript Document.cookie API; 
+it is sent only to the server. For example, cookies that persist server-side sessions don't need to be available to JavaScript, 
+and should have the HttpOnly attribute. This precaution helps mitigate cross-site scripting (XSS) attacks.
+
+Security
+
+    //signed (HMAC) with a secret to mitigate tampering
+    //rarely encrypted (AES) to protected from being read
+    //no security concern if read by 3rd party
+    //carries no meaningful data (random string)
+    //even if encrypted, still a 1-1 match
+    //encoded (URL) - not for security, but compactness
+
+CSRF
+    //unauthorized actions on behalf of the authenticated user
+    //mitigated with a CSRF token (e.g. sent in a separate X-CSRF-TOKEN cookie)    
+
+
+Web Storage or Client Storage
+
+The Web Storage provides mechanisms by which browsers can store key/value pairs, 
+in a much more intuitive fashion than using cookies.
+The two mechanisms within Web Storage are:
+
+1.SessionStorage -sessionStorage maintains a separate storage area for each given origin that's available for the duration of the page session (as long as the browser is open, including page reloads and restores)
+                // Stores data only for a session, meaning that the data is stored until the browser (or tab) is closed.
+                // Data is never transferred to the server.
+                // Storage limit is larger than a cookie (at most 5MB).
+
+2.LocalStorage - localStorage is Browser key-value store with a simple JS API,it does the same thing,
+                  // Stores data with no expiration date, and gets cleared only through JavaScript, or clearing the Browser cache / Locally Stored Data.
+                  // Storage limit is the maximum amongst the two(10MB).
+
+These mechanisms are available via the Window.sessionStorage and Window.localStorage properties.
+
+Pros
+// domain-specific, each site has its own, other sites can't read/write
+//  max size higher than cookie (5 MB / domain vs. 4 KB / cookie)
+
+Cons
+    // plaintext, hence not secure by design
+    // limited to string data, hence need to serialize
+    // can't be used by web workers
+    // stored permanently, unless removed explicitly
+    // accessible to any JS code running on the page (incl. XSS)
+    // scripts can steal tokens or impersonate users
+
+Best for
+  // public, non-sensitive, string data    
+
+Worst for
+    //private sensitive data
+    //non-string data
+    //offline capabilities  

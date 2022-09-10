@@ -1,0 +1,70 @@
+HTTP
+
+Hypertext Transfer Protocol (HTTP) is an application-layer protocol for transmitting hypermedia documents, such as HTML. 
+It was designed for communication between web browsers and web servers, but it can also be used for other purposes. 
+HTTP follows a classical client-server model, with a client opening a connection to make a request, then waiting until it receives a response. 
+HTTP is a stateless protocol, meaning that the server does not keep any data (state) between two requests.
+
+Client Server model
+
+HTTP is a client-server protocol: 
+ // requests are sent by one entity, the user-agent (or a proxy on behalf of it). Most of the time the user-agent is a Web browser, but it can be anything, for example a robot that crawls the Web to populate and maintain a search engine index.
+ // Each individual request is sent to a server, which handles it and provides an answer, called the response.
+    Between the client and the server there are numerous entities, collectively called proxies, which perform different operations and act as gateways or caches
+    In reality, there are more computers between a browser and the server handling the request: there are routers, modems, and more. 
+    Thanks to the layered design of the Web, these are hidden in the network and transport layers. 
+    HTTP is on top, at the application layer.
+
+    Roles of different Components:
+    1. Client: To present a Web page, the browser sends an original request to fetch the HTML document that represents the page.
+                It then parses this file, making additional requests corresponding to execution scripts, layout information (CSS) to display, and sub-resources contained within the page (usually images and videos). 
+                The Web browser then mixes these resources to present to the user a complete document, the Web page. 
+                Scripts executed by the browser can fetch more resources in later phases and the browser updates the Web page accordingly.
+
+                A Web page is a hypertext document. This means some parts of displayed text are links, which can be activated (usually by a click of the mouse) to fetch a new Web page, 
+                allowing the user to direct their user-agent and navigate through the Web. 
+                The browser translates these directions in HTTP requests, and further interprets the HTTP responses to present the user with a clear response.
+    
+    2. Web Server: On the opposite side of the communication channel, is the server, which serves the document as requested by the client.
+                    A server appears as only a single machine virtually: this is because it may actually be a collection of servers, 
+                    sharing the load (load balancing) or a complex piece of software interrogating other computers (like cache, a DB server, or e-commerce servers), 
+                    totally or partially generating the document on demand.
+                    A server is not necessarily a single machine, but several server software instances can be hosted on the same machine. 
+                    With HTTP/1.1 and the Host header, they may even share the same IP address.
+
+    3. Proxies: Between the Web browser and the server, numerous computers and machines relay the HTTP messages. 
+                Due to the layered structure of the Web stack, most of these operate at the transport, network or physical levels, 
+                becoming transparent at the HTTP layer and potentially making a significant impact on performance. 
+                Those operating at the application layers are generally called proxies .
+
+                These can be transparent, forwarding on the requests they receive without altering them in any way, 
+                or non-transparent, in which case they will change the request in some way before passing it along to the server. 
+                Proxies may perform numerous functions:
+
+                // caching (the cache can be public or private, like the browser cache)
+                // filtering (like an antivirus scan or parental controls)
+                // load balancing (to allow multiple servers to serve the different requests)
+                // authentication (to control access to different resources)
+                // logging (allowing the storage of historical information)
+
+Basic Nature of HTTP
+
+1. HTTP is simple -  HTTP messages can be read and understood by humans, providing easier testing for developers, and reduced complexity for newcomers.
+2. HTTP is extensible - HTTP headers make this protocol easy to extend and experiment with. 
+                        New functionality can even be introduced by a simple agreement between a client and a server about a new header's semantics.
+
+3. HTTP is stateless, but not sessionless - HTTP is stateless: there is no link between two requests being successively carried out on the same connection.
+                                            But while the core of HTTP itself is stateless, HTTP cookies allow the use of stateful sessions by Using header extensibility, HTTP Cookies are added to the workflow, 
+                                            allowing session creation on each HTTP request to share the same context, or the same state.
+
+HTTP Flow (How the things unfolds in Http World)
+
+When a client wants to communicate with a server, either the final server or an intermediate proxy, it performs the following steps:
+
+1. Open a TCP connection: The TCP connection is used to send a request, or several, and receive an answer. 
+                          The client may open a new connection, reuse an existing connection, or open several TCP connections to the servers.
+
+2. Send an HTTP message: HTTP messages (before HTTP/2) are human-readable. With HTTP/2, these simple messages are encapsulated in frames, 
+                         making them impossible to read directly, but the principle remains the same. For example:
+
+3. Read the response sent by the server:The server processes the request, sending back its answer, providing a status code and appropriate data.

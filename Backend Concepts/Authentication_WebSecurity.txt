@@ -1,0 +1,226 @@
+User authentication & authorization is one of the important part of any web application.
+
+Authentication
+
+Authentication is the process of verifying who a user claims to be,
+verifying identity (401 Unauthorized)
+
+Authorization
+Authorization is the process of verifying what they have access to (what you are allowed to do)
+i.e  verifying permissions (403 Forbidden)
+
+Two types of applications:
+1.Stateful - Stateful applications retain a persistent connection between the client and server. 
+              Each request is dependent on the previous request, and if a request is interrupted, the subsequent request can continue where the last request left off because the state of the application is stored somewhere. 
+              Stateful applications also need to differentiate between different sessions.
+
+2. Stateless - Stateless applications don’t retain any information after a request; every request is a brand new and completely independent.
+                the world wide web is developed on a stateless protocol, HTTP. 
+                In every HTTP transaction, the server and client acknowledge each other and then share some information. 
+                Once the transaction end, the client and server forget the other exists.
+
+So if the world wide web is stateless, how do we build stateful applications on top of this system?
+
+Thats were there are two types of Authentication mechanism come into picture:
+
+1. Cookie-based Authentication/Session Authentication(Cookie + Session)
+2. Token-based Authentication
+
+
+
+Session Authentication(Cookie + Session)
+_________________________________________
+
+Sessions
+A session is a global variable stored on the server. Each session is assigned a unique id which is used to retrieve stored values. 
+Whenever a session is created, a cookie containing the unique session id is stored on the user’s computer and returned with every request to the server. 
+If the client browser does not support cookies, the unique session id is displayed in the URL. 
+Sessions have the capacity to store relatively large data compared to cookies.
+
+The session values are automatically deleted when the browser is closed. If you want to store the values permanently, then you should store them in the database.
+To store important information such as the user id more securely on the server where malicious users cannot temper with them. 
+Sessions are used to pass values from one page to another.
+
+// Cookies are client-side files that contain user information, whereas Sessions are server-side files that contain user information.
+// Cookie is not dependent on session, but Session is dependent on Cookie.
+// Cookie expires depending on the lifetime you set for it, while a Session ends when a user closes his/her browser.
+
+ Persistent Cookies are stored on a user's hard drive. 
+ They allow users to revisit a website already authenticated, even if the user closes the browser or restarts their machine. 
+ These types of cookies also have an expiration date that's issued by the webserver.
+
+Suppose you have a REST API (e.g. GET /orders) and you want to restrict access to the authorized users only.
+In the most naïve approach, the API would ask for a username and password; then it will be searched into a database if those credentials really exists. We check for authenticity. Finally, it will be checked if the authenticated user is also authorized to perform that request. 
+If both checks passes the real API will be executed.
+
+Flow
+    1.user submits login credentials, e.g. email & password
+    2.server verifies the credentials against the DB
+    3.server creates a temporary user session
+    4.sever issues a cookie with a session ID
+    5.user sends the cookie with each request
+    6.server validates it against the session store & grants access
+    7.when user logs out, server destroys the sess. & clears the cookie
+ 
+Features
+    1.every user session is stored server-side (stateful)
+        //memory (e.g. file system)
+        //cache (e.g. Redis or Memcached), or
+        //DB (e.g. Postgres, MongoDB)
+
+    2. (i) each user is identified by a session, it is an opaque reference
+            // no 3rd party can extract data out
+            //only issuer (server) can map back to data
+
+      (ii) stored in a cookie
+            //signed with a secret
+            //protected with flags
+
+    3. SSR web apps, frameworks (Spring, Rails), scripting langs (PHP)
+
+Token-based Authentication
+___________________________
+Token-based authentication solves some of the cons to traditional cookie-based authentication. 
+Token-based authentication is stateless. The server doesn’t need to know about session data
+
+Features
+
+    1.tokens are not stored server-side, only on the client (stateless)
+    2.signed with a secret against tampering
+        //verified and can be trusted by the server
+    3.tokens can be opaque or self-contained
+        //carries all required user data in its payload
+        //reduces database lookups, but exposes data to XSS
+    3.typically sent in Authorization header
+    4.when a token is about to expire, it can be refreshed
+        //client is issued both access & refresh tokens
+    5.used in SPA web apps, web APIs, mobile apps
+
+Flow
+    1.user submits login credentials, e.g. email & password
+    2.server verifies the credentials against the DB
+    3.sever generates a temporary token and embeds user data into it
+    4.server responds back with the token (in body or header)
+    5.user stores the token in client storage
+    6.user sends the token along with each request
+    7.server verifies the token & grants access
+    8.when user logs out, token is cleared from client storage
+
+JWT
+
+JSON Web Token (JWT) is an open standard (RFC 7519) that defines a compact and self-contained way for securely transmitting information between parties as a JSON object. 
+This information can be verified and trusted because it is digitally signed. 
+Arguably one of the largest use cases for JWT is authorization.
+
+Each token is self-contained, that means it contains every information needed to allow or deny any given requests to an API. 
+To understand how we can verify a token and how authorization happens we need to take a step back and look into a JWT.
+can be signed with symmetric (secret) or asymmetric (public/private) key.
+contains header (meta), payload (claims), and signature delimited by .
+
+JWT validation
+
+Since token is self-contained, we own all the information needed for its validation. 
+For example, we know that token has been signed using RS256 (alg property of the header) and a private key. 
+Now we need to know how to get the right public key to perform the validation.
+
+Note: In the asymmetric encryption, we all know that public key is used to encrypt a message, whereas private key is used to decrypt it.
+In a signing algorithm this process is completely switched! Here the message (the data in the pseudo-code above) is signed using the private key and the public key is used to verify that the signature is valid.
+
+Example:
+HTTP/1.1 200 OK
+Content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1YmQ2MWFhMWJiNDNmNzI0M2EyOTMxNmQiLCJuYW1lIjoiSm9obiBTbWl0aCIsImlhdCI6MTU0MTI3NjA2MH0.WDKey8WGO6LENkHWJRy8S0QOCbdGwFFoH5XCAR49g4k
+
+Security
+    1.signed (HMAC) with a secret
+        //guarantees that token was not tampered
+        //any manipulation (e.g. exp. time) invalidates token
+    2.rarely encrypted (JWE)
+        //(web) clients need to read token payload
+        //can't store the secret in client storage securely
+    3.encoded (Base64Url) - not for security, but transport
+        //payload can be decoded and read
+        //no sensitive/private info should be stored
+        //access tokens should be short-lived
+
+    XSS
+        client-side script injections
+        malicious code can access client storage to
+            //steal user data from the token
+            //initiate AJAX requests on behalf of user
+        mitigated by sanitizing & escaping user input
+
+
+Sessions(Sessions + Cookies) vs. JWT
+
+Pros
+    //session IDs are opaque and carry no meaningful data
+    //cookies can be secured with flags (same origin, HTTP-only, HTTPS, etc.)
+    //HTTP-only cookies can't be compromised with XSS exploits
+    //battle-tested  in many langs & frameworks
+
+Cons
+    //server must store each user session in memory
+    //session auth must be secured against CSRF
+    //horizontal scaling is more challenging
+            -risk of single point of failure
+            -need sticky sessions with load balancing    
+
+JWT Auth
+
+Pros
+    //server does not need to keep track of user sessions
+    //horizontal scaling is easier (any server can verify the token)
+    //CORS is not an issue if Authorization header is used instead of Cookie
+    //FE and BE architecture is decoupled, can be used with mobile apps
+    //operational even if cookies are disabled
+
+Cons
+    //server still has to maintain a blacklist of revoked tokens
+        -defeats the purpose of stateless tokens
+        -a whitelist of active user sessions is more secure
+    //when scaling, the secret must be shared between servers
+    //data stored in token is "cached" and can go stale (out of sync)
+    //tokens stored in client storage are vulnerable to XSS
+        - if JWT token is compromised, attacker can
+        - steal user info, permissions, metadata, etc.
+        - access website resources on user's behalf
+    // requires JavaScript to be enabled    
+
+
+Options for Authentication in SPAs and APIs
+1.Sessions
+
+2.Stateless JWT
+
+3.Stateful JWT
+
+Sessions
+    //sessions are persisted server-side and linked by sess. ID
+    //session ID is signed and stored in a cookie
+        - sent via Set-Cookie header
+        - HttpOnly, Secure, & SameSite flags
+        - scoped to the origin with Domain & Path attrs
+    //another cookie can hold CSRF token
+
+Stateless JWT
+    //user payload embedded in the token
+    //token is signed & base64url encoded
+        - sent via Authorization header
+        -  stored in localStorage / sessionStorage (in plaintext)
+    //server retrieves user info from the token
+    //no user sessions are stored server side
+    //only revoked tokens are persisted
+    //refresh token sent to renew the access token    
+
+Stateful JWT
+    //only user ref (e.g. ID) embedded in the token
+    //token is signed & base64url encoded
+        - sent as an HTTP-only cookie (Set-Cookie header)
+        - sent along with non-HTTP X-CSRF-TOKEN cookie
+    //server uses ref. (ID) in the token to retrieve user from the DB
+    //no user sessions stored on the server either
+    //revoked tokens still have to be persisted    
+
+
+    
